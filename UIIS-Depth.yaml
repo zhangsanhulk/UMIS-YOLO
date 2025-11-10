@@ -1,0 +1,11 @@
+path: /home/projects/Coral/dataset/UIIS-Depth
+train: train/rgb/images
+val: val/rgb/images
+
+
+channels: 4
+nc: 7  # number of classes
+names: ['fish', 'reefs', 'aquatic plants', 'wrecks/ruins','human divers','robots','sea-floor' ]  # class names
+
+
+

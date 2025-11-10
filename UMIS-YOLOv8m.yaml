@@ -1,0 +1,87 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# Ultralytics YOLOv8-seg instance segmentation model with P3/8 - P5/32 outputs
+# Model docs: https://docs.ultralytics.com/models/yolov8
+# Task docs: https://docs.ultralytics.com/tasks/segment
+
+# Parameters
+nc: 4 # number of classes
+scales: # model compound scaling constants, i.e. 'model=yolov8n-seg.yaml' will call yolov8-seg.yaml with scale 'n'
+  # [depth, width, max_channels]
+  m: [0.67, 0.75, 768]
+  #m: [0.50, 1.00, 512]
+  n: [0.33, 0.25, 1024]
+  s: [0.33, 0.50, 1024]
+  
+  l: [1.00, 1.00, 512]
+  x: [1.00, 1.25, 512]
+
+# YOLOv8.0n backbone
+backbone:
+  # [from, repeats, module, args]
+  
+  - [-1, 1, Silence, []]  # 0-P1/2             0
+  # visible
+  - [0, 1, SilenceChannel, [0,3]]  # 0-P1/2    1
+  - [-1, 1, Conv, [64, 3, 2]] # 2-P1/2         2
+  # depth
+  - [0, 1, SilenceChannel, [3,4]]  # 11-P1/2   3
+  - [-1, 1, Conv, [64, 3, 2]] # 12-P1/2        4
+  
+  - [ [ 2, 4], 1, ADD, [64] ]       # 5
+  
+
+  - [2, 1, Conv, [128, 3, 2]] # 1-P2/4      6
+  - [-1, 3, C2f, [128, True]]             
+  - [-1, 1, Conv, [256, 3, 2]] # 3-P3/8
+  - [-1, 6, C2f, [256, True]]               #9
+  
+  - [4, 1, Conv, [128, 3, 2]] # 1-P2/4      6
+  - [-1, 3, C2f, [128, True]]             
+  - [-1, 1, Conv, [256, 3, 2]] # 3-P3/8
+  - [-1, 6, C2f, [256, True]]               #13
+  
+  - [ [ 9, 13], 1, FourierBlock , [512] ]       # 14
+  
+  - [9, 1, Conv, [512, 3, 2]] # 5-P4/16
+  - [-1, 6, C2f, [512, True]]               #16
+  
+  - [13, 1, Conv, [512, 3, 2]] # 5-P4/16
+  - [-1, 6, C2f, [512, True]]               #18
+  
+  - [ [ 16, 18], 1, FourierBlock , [512] ]       # 19
+  
+  
+  - [16, 1, Conv, [1024, 3, 2]] # 7-P5/32
+  - [-1, 3, C2f, [1024, True]]
+  - [-1, 1, SPPF, [1024, 5]] # 22
+  
+  - [18, 1, Conv, [1024, 3, 2]] # 7-P5/32
+  - [-1, 3, C2f, [1024, True]]
+  - [-1, 1, SPPF, [1024, 5]] # 25
+  
+  - [ [ 22, 25], 1, FourierBlock , [1024] ]       # 26
+
+# YOLOv8.0n head
+head:
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [[-1, 19], 1, Concat, [1]] # cat backbone P4
+  - [-1, 3, C2f, [512]] # 12                         29
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [[-1, 14], 1, Concat, [1]] # cat backbone P3
+  - [-1, 3, C2f, [256]] # 15 (P3/8-small)            32
+
+  - [-1, 1, Conv, [256, 3, 2]]
+  - [[-1, 29], 1, Concat, [1]] # cat head P4
+  - [-1, 3, C2f, [512]] # 18 (P4/16-medium)          35
+
+  - [-1, 1, Conv, [512, 3, 2]]
+  - [[-1, 26], 1, Concat, [1]] # cat head P5
+  - [-1, 3, C2f, [1024]] # 21 (P5/32-large)          38
+  
+  - [ [5, 32], 1, DFF, [256]]     # 39
+  - [ [5, 35], 1, DFF, [512]]     # 40
+  - [ [5, 38], 1, DFF, [1024]]    # 41
+
+  - [[39, 40, 41], 1, Segment, [nc, 32, 256]] # Segment(P3, P4, P5)

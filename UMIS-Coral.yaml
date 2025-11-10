@@ -1,0 +1,11 @@
+path: /home/projects/Coral/dataset/allcoral
+train: train/rgb/images
+val: val/rgb/images
+
+
+channels: 4
+nc: 4  # number of classes
+names: ['_background_', 'alive', 'bleach', 'dead']  # class names
+
+
+

@@ -89,9 +89,9 @@ the features preceding the segmentation head.
 </div>
 
  
- Trained Weights：
- - [UMIS-Coral](weights/UMIS-Coral.pt)
- - [UIIS-Depth](weights/UIIS-Depth.pt)
+ ###  Trained Weights：
+ - [UMIS-Coral](https://pan.baidu.com/s/1KHIqiNq0Ijsbgy49aDzTww) (password: fy9s)
+ - [UIIS-Depth](https://pan.baidu.com/s/1KHIqiNq0Ijsbgy49aDzTww) (password: fy9s)
 
 
 
